@@ -39,7 +39,7 @@ class CrosswalkBehaviour(DTROS):
         self.peduck_detected = False
 
         # Step 1: Detect Crosswalk Distance with a timeout
-        timeout = 30  # seconds
+        timeout = 200  # seconds
         start_time = rospy.get_time()
         rospy.loginfo("Detecting crosswalk distance before moving...")
         
@@ -59,7 +59,7 @@ class CrosswalkBehaviour(DTROS):
 
         # Step 2: Move to the first blue line
         rospy.loginfo(f"Moving to crosswalk at {self.crosswalk_distance} meters...")
-        self.navigator.move_straight(self.crosswalk_distance-0.03)  # Move until first blue line
+        self.navigator.move_straight(self.crosswalk_distance-0.03)  # Move until first blue line, safee distance
 
         # Step 3: Stop at first blue line
         rospy.loginfo("Stopping at first blue line for 1 second...")
@@ -95,7 +95,7 @@ class CrosswalkBehaviour(DTROS):
         self.peduck_detected = msg.data  # True means PeDuckstrian detected, False means clear
     def wait_for_peduck_clearance(self):
         """Wait for PeDuckstrian clearance before proceeding, with balanced reliability."""
-        timeout = 20  # Extended maximum wait time for a PeDuckstrian response
+        timeout = 120  # Extended maximum wait time for a PeDuckstrian response
         start_time = rospy.get_time()
         check_interval = 0.5  # Check interval
         consecutive_clear_detections = 0

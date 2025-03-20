@@ -91,10 +91,6 @@ class PeDuckstrianDetector:
 
             if red_pixels > 2:  # Reduced from 4 to be more sensitive
                 ducks_detected += 1
-                if self.debug:
-                    # Draw bounding box around detected duck
-                    cv2.rectangle(roi, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
 
         # Update detection state
         current_detection = ducks_detected > 0
