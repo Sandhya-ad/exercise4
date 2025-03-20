@@ -1,9 +1,9 @@
 docs_config_version: v1
 
 # CONFIGURE THESE TO MATCH YOUR PROJECT:
-project: "REPOSITORY_NAME_HERE"
+project: "exercise4"
 copyright: "Duckietown"
-author: "YOUR_NAME_HERE"
+author: "Sandhya"
 version: "ente"
 custom_sections:  [
   "Configuration",
