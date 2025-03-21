@@ -58,7 +58,7 @@ class DuckiebotAvoidanceBehaviour(DTROS):
         else:
             rospy.logwarn("Already within 15 cm. No forward motion needed.")
 
-        self.navigator.stop(1)
+        self.navigator.stop(3)
 
         # Step 2: Avoidance sequence
         rospy.loginfo("Executing avoidance sequence: left → forward → right → left → drive")
