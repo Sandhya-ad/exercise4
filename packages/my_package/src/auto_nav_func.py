@@ -105,6 +105,39 @@ class Navigator:
 
         self.stop(1)
 
+    def sharp_right(self):
+        """Performs a sharp right turn (pivot around right wheel)."""
+        rospy.loginfo("Executing sharp right turn (pivot).")
+        rospy.sleep(1)
+
+        command = WheelsCmdStamped(vel_left=0.47, vel_right=0.0)  # Left wheel moves, right stays
+
+        self._initial_ticks_left = self._ticks_left
+        self._initial_ticks_right = self._ticks_right
+
+        while (self._ticks_left - self._initial_ticks_left) < 82:  # Only track left since right is stationary
+            self.publisher.publish(command)
+            rospy.sleep(0.1)
+
+        self.stop(1)
+
+
+    def sharp_left(self):
+        """Performs a sharp right turn (pivot around right wheel)."""
+        rospy.loginfo("Executing sharp left turn (pivot).")
+        rospy.sleep(1)
+
+        command = WheelsCmdStamped(vel_left=0.0, vel_right=0.47)  # Left wheel moves, right stays
+
+        self._initial_ticks_left = self._ticks_left
+        self._initial_ticks_right = self._ticks_right
+
+        while (self._ticks_right - self._initial_ticks_right) < 80:  # Only track left since right is stationary
+            self.publisher.publish(command)
+            rospy.sleep(0.1)
+
+        self.stop(1)
+
     def stop(self, duration):
         """ Stops the bot for a specified duration. """
         rospy.loginfo(f"Stopping for {duration} seconds.")

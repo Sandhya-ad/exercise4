@@ -122,7 +122,7 @@ class AprilTagRedTapeBehaviour(DTROS):
 
         # Move forward 30 cm after stopping
         rospy.loginfo("Moving forward 30 cm after stopping...")
-        self.navigator.move_straight(0.30)
+        self.navigator.move_straight(0.40)
 
         # **Stop execution after one behavior completes**
         self.behavior_executed = True

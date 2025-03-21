@@ -30,13 +30,29 @@ class CrosswalkBehaviour(DTROS):
 
         rospy.loginfo("Crosswalk Behaviour Initialized")
 
-    def execute(self):
-        """Main behavior: Detect crosswalk, stop, check for PeDuckstrians, and proceed."""
+    def execute_multiple_times(self, repetitions=2):
+        """Execute the crosswalk behavior multiple times."""
+        for i in range(repetitions):
+            rospy.loginfo(f"Starting execution {i+1} of {repetitions}...")
+            success = self.execute(first_run=(i == 0))  # Pass first_run=True for first execution
+            
+            # If this is not the last repetition and previous execution was successful
+            if i < repetitions - 1 and success:
+                rospy.loginfo(f"Execution {i+1} complete. Waiting before next execution...")
+                rospy.sleep(3)  # Wait 3 seconds between executions
+        
+        rospy.loginfo("All executions completed. Exiting program.")
+        rospy.signal_shutdown("Crosswalk behavior executed successfully.")
 
+    def execute(self, first_run=True):
+        """Single execution of the crosswalk behavior."""
         # Reset flags
         self.crosswalk_distance = None
         self.waiting_for_peduck = False
         self.peduck_detected = False
+
+        # Give camera time to warm up
+        rospy.sleep(1.0)
 
         # Step 1: Detect Crosswalk Distance with a timeout
         timeout = 200  # seconds
@@ -46,20 +62,23 @@ class CrosswalkBehaviour(DTROS):
         while self.crosswalk_distance is None and not rospy.is_shutdown():
             if rospy.get_time() - start_time > timeout:
                 rospy.logerr("Timeout waiting for crosswalk. Exiting.")
-                rospy.signal_shutdown("Crosswalk detection timeout")
-                return
+                return False  # Return False to indicate failure
                 
             self.crosswalk_distance = self.crosswalk_detector.get_crosswalk_distance()
             if self.crosswalk_distance is None:
                 rospy.logwarn("No crosswalk detected. Retrying...")
-                rospy.sleep(0.5)
+                rospy.sleep(1.0)  # Increased from 0.5 to 1.0 seconds
+        
+        # Check if we failed to detect crosswalk
+        if self.crosswalk_distance is None:
+            return False
                 
         # If we're here, we've detected the crosswalk
         rospy.loginfo(f"Crosswalk detected at {self.crosswalk_distance} meters.")
 
         # Step 2: Move to the first blue line
         rospy.loginfo(f"Moving to crosswalk at {self.crosswalk_distance} meters...")
-        self.navigator.move_straight(self.crosswalk_distance-0.03)  # Move until first blue line, safee distance
+        self.navigator.move_straight(self.crosswalk_distance-0.05)  # Move until first blue line, safe distance
 
         # Step 3: Stop at first blue line
         rospy.loginfo("Stopping at first blue line for 1 second...")
@@ -80,20 +99,21 @@ class CrosswalkBehaviour(DTROS):
         # Step 5: Handle PeDuckstrians based on detection
         if self.peduck_detected:
             rospy.loginfo("PeDuckstrians detected at blue line. Waiting until clear...")
-            self.wait_for_peduck_clearance()
+            self.wait_for_peduck_clearance(first_run=first_run)
         else:
-            rospy.loginfo("No PeDuckstrians detected. Waiting 1 second, then moving.")
+            # Move 30 cm in first run, 50 cm in second run
+            move_distance = 0.4 if first_run else 0.55
+            rospy.loginfo(f"No PeDuckstrians detected. Moving forward {move_distance} meters.")
             rospy.sleep(1)
-            self.navigator.move_straight(0.5)  # Move past the second blue line
+            self.navigator.move_straight(move_distance)
 
-        # Step 6: Stop program after one execution
-        rospy.loginfo("Behavior completed. Exiting program.")
-        rospy.signal_shutdown("Crosswalk behavior executed successfully.")
-
+        rospy.loginfo("Behavior execution completed successfully.")
+        return True  # Return True to indicate success
+        
     def peduck_callback(self, msg):
         """Handles PeDuckstrian detection callback from the topic."""
         self.peduck_detected = msg.data  # True means PeDuckstrian detected, False means clear
-    def wait_for_peduck_clearance(self):
+    def wait_for_peduck_clearance(self,first_run=True):
         """Wait for PeDuckstrian clearance before proceeding, with balanced reliability."""
         timeout = 120  # Extended maximum wait time for a PeDuckstrian response
         start_time = rospy.get_time()
@@ -118,8 +138,11 @@ class CrosswalkBehaviour(DTROS):
                 if consecutive_clear_detections >= required_clear_detections:
                     rospy.loginfo("Crosswalk confirmed clear. Proceeding past the second blue line.")
                     self.led_blinker.set_led_color("green")  # Change LED to green
-                    rospy.sleep(0.5)  # Brief pause for safety
-                    self.navigator.move_straight(0.3)
+                    # Move 30 cm in first run, 50 cm in second run
+                    move_distance = 0.4 if first_run else 0.5
+                    rospy.loginfo(f"No PeDuckstrians detected. Moving forward {move_distance} meters.")
+                    rospy.sleep(1)
+                    self.navigator.move_straight(move_distance)
                     return
             else:
                 # Reset counter if a pedestrian is detected
@@ -138,7 +161,8 @@ if __name__ == '__main__':
     node = CrosswalkBehaviour(node_name='crosswalk_behaviour_node')
     
     rate = rospy.Rate(10)  # 10 Hz
-    node.execute()
+    node.execute_multiple_times(repetitions=2)  # Execute twice
+    
     while not rospy.is_shutdown():
         rospy.sleep(0.1)
 

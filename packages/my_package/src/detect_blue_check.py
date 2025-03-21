@@ -10,6 +10,8 @@ from cv_bridge import CvBridge
 from preprocess_image import CameraReaderNode
 from crosswalk_detection import CrosswalkDetection  # Crosswalk detection
 from detect_peDuck import PeDuckstrianDetector  # 🚶‍♂️ PeDuckstrian detection
+from detect_duckiebot import DuckiebotDetector #  Duckiebot distance estimation
+from auto_nav_func import Navigator
 
 class preprocessedImageNode(DTROS):
 
@@ -19,9 +21,12 @@ class preprocessedImageNode(DTROS):
         # Get vehicle name
         self._vehicle_name = os.environ.get('VEHICLE_NAME', 'default_duckiebot')
 
-        self.crosswalk_detector = LaneDetectionNode(node_name="crosswalk_detection_node")
-        self.peduck_detector = PeDuckstrianDetector()  # 🚶‍♂️ Detects PeDuckstrians
-
+        #self.crosswalk_detector = CrosswalkDetection(node_name="crosswalk_detection_node")
+        #self.peduck_detector = PeDuckstrianDetector(True)  # 🚶‍♂️ Detects PeDuckstrians
+        self.duckiebot_detector = DuckiebotDetector(True)
+        #navigator = Navigator()  # Controls movement
+        #navigator.sharp_left()
+        #navigator.sharp_right()
 
 
 if __name__ == '__main__':
