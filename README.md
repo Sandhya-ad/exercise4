@@ -1,47 +1,34 @@
-# Template: template-ros
+# Repo for Exercise 4 cmput 412
 
-This template provides a boilerplate repository
-for developing ROS-based software in Duckietown.
+First run `dts devel build -H csc22907.local -f` to build the executables on the duckie bot
 
-**NOTE:** If you want to develop software that does not use
-ROS, check out [this template](https://github.com/duckietown/template-basic).
+## Part 1
+To view just the april tag detection, run the command `dts devel run -H csc22907.local -L view-pre-pross-image`
+Then in another terminal run command `dts start_gui_tool` then run `rqt_image_view` to view the image under the topic `/camera_apriltag/image/compressed`
 
-
-## How to use it
-
-### 1. Fork this repository
-
-Use the fork button in the top-right corner of the github page to fork this template repository.
+For the behaviour based on april tag, run command:
+`dts devel run -H csc22907.local -L april-tag-behavior`
+The program will stop after execting the behaviour once. To see different behaviour run the program again with different tag.
 
 
-### 2. Create a new repository
+## Part 2
+Run the command
+```
+dts devel run -H csc22907.local -L crosswalk-behavior
+```
+The program will run twice to show 2 different behaviour: with the peDuckstrian and without peDuckstrian
+To see just the peDuckstrian detection in the file `packages/my_packages/src/detect_blue_check.py` uncomment the line  
+`#self.peduck_detector = PeDuckstrianDetector(True)  # 🚶‍♂️ Detects PeDuckstrians`
+Then in another terminal run command `dts start_gui_tool` then run `rqt_image_view` to view the image under the topic `/camera_ducks/image/compressed`
+And when there are ducks in front, you should see the bounding box around them
 
-Create a new repository on github.com while
-specifying the newly forked template repository as
-a template for your new repository.
+## Part 3
+Run the command
+```
+dts devel run -H csc22907.local -L part3
+```
 
-
-### 3. Define dependencies
-
-List the dependencies in the files `dependencies-apt.txt` and
-`dependencies-py3.txt` (apt packages and pip packages respectively).
-
-
-### 4. Place your code
-
-Place your code in the directory `/packages/` of
-your new repository.
-
-
-### 5. Setup launchers
-
-The directory `/launchers` can contain as many launchers (launching scripts)
-as you want. A default launcher called `default.sh` must always be present.
-
-If you create an executable script (i.e., a file with a valid shebang statement)
-a launcher will be created for it. For example, the script file 
-`/launchers/my-launcher.sh` will be available inside the Docker image as the binary
-`dt-launcher-my-launcher`.
-
-When launching a new container, you can simply provide `dt-launcher-my-launcher` as
-command.
+To see just the duckiebot detection in the file `packages/my_packages/src/detect_blue_check.py` uncomment the line  
+`#self.duckiebot_detector = DuckiebotDetector(True)`
+Then in another terminal run command `dts start_gui_tool` then run `rqt_image_view` to view the image under the topic `camera_ducks/image/compressed`
+This detects the black dots pattern in the back of the duckiebot so you should see the dots being contoured in the topic
